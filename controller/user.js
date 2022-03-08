@@ -97,18 +97,24 @@ exports.userlogin = async (req, res, next) => {
 }
 
 
-// show student using id
-router.get('/routes/user.js', async(req, res, next) => {
-    try{
-        const User = await User.findById({UserId: user._id})
-        res.status(200).json(user)
+exports.userDetails = async(req, res)=>{
+    var userDetails = await User.findOne({_id:req.query.id})
+    if(!userDetails){
+        return res.json({status:400, message:"User Not Found"})
     }
-    catch (err){
-        res.status(404).json({
-            message :'user not found! :',
-            err
-        })
+    return res.json({status:200, message:"User Details", data:userDetails})
+}
+
+exports.userList=async(req, res)=>{
+    var userlist = await User.findOne()
+    if(userlist.length == 0){
+        return res.json({status:400, message:"No USers", data:[]})
     }
-})
+    return res.json({status:200, message:"User List", data:userlist})
+}
 
-
+// exports.logout = async(req, res)=>{
+//     req.logout();
+//     return res.json({login:"http://localhost:7000/signup"})
+//     // res.redirect("/");
+// }
