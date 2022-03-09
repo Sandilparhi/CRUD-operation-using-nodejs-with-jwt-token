@@ -21,7 +21,7 @@ app.use(bodyParser.json())
 // database connection
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://roshan:user12@cluster0.uoxgo.mongodb.net/mobilefirst?retryWrites=true&w=majority', {
+mongoose.connect('mongodb://localhost:27017/mobilefirst', {
     useUnifiedTopology: true,
     useNewUrlParser: true
   })
