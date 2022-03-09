@@ -1,17 +1,17 @@
-// const Admin = require('../model');
-// const Contact = require('../model');
 const User = require("../models/user")
 var express = require("express");
 var app = express();
 
+var bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
-
-
 const bodyParser = require("body-parser")
 app.use(bodyParser.urlencoded({ extended: false }))
 
-var bcrypt = require('bcryptjs');
-const user = require("../models/user");
+const multer = require("multer");
+const mime = require('mime-types')
+
+
+
 
 async function hashPassword(password) {
     return await bcrypt.hash(password, 10);
@@ -41,12 +41,12 @@ exports.Signup = async(req, res)=>{
             qualification:  qualification,
             city: city,
             Phone: phone,
-            role:0
+            role:role
             
         });
-        var userData = await User.find({ email: req.body.email })
+        var userData = await User.find({ Phone:phone})
         if (userData.length > 0) {
-            return res.json({ statusCode: 400, message: "Email alerady exist" })
+            return res.json({ statusCode: 400, message: " alerady exist" })
         }
         let response = new User(newUser)
         response.save()
@@ -81,7 +81,6 @@ exports.userlogin = async (req, res, next) => {
             }
             else {
                 const accessToken = jwt.sign({
-        
                     userId: user._id
                 }, 'SANDIL', {
                         expiresIn: "1d"
@@ -95,7 +94,6 @@ exports.userlogin = async (req, res, next) => {
         return res.json({ statusCode: 400, message: "login failed" })
     }
 }
-
 
 exports.userDetails = async(req, res)=>{
     var userDetails = await User.findOne({_id:req.query.id})
@@ -113,8 +111,33 @@ exports.userList=async(req, res)=>{
     return res.json({status:200, message:"User List", data:userlist})
 }
 
-// exports.logout = async(req, res)=>{
-//     req.logout();
-//     return res.json({login:"http://localhost:7000/signup"})
-//     // res.redirect("/");
-// }
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "./images");
+    },
+    filename: (req, file, cb) => {
+        console.log("1");
+        cb(   
+            null, file.fieldname + '_' + Date.now() + '.' + mime.extension(file.mimetype)
+        )
+    }
+});
+const upload = multer({storage: storage}).single('image');
+
+exports.userRecord = async(req, res)=>{
+    upload(req, res,async function (err) {
+        if (err) {
+            console.log("There was an error uploading the image.");
+        }
+        console.log("user", req.user)
+        var userdata = await  User.findOne({_id:req.user.userId})
+        console.log("userdata",userdata)
+        
+        if(userdata.role == 0){
+            return res.json({status:403, message:"you are guest User You can not upload image"})
+        }
+        console.log("image created",req.file.filename)
+        await User.updateOne({_id:req.user.userId}, {$set:{pic:req.file.filename}}) 
+        return res.json({statusCode:200, statusMsj: "image uploaded", user:userdata})
+    })
+}

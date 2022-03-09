@@ -21,7 +21,7 @@ app.use(bodyParser.json())
 // database connection
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/mobilefirst', {
+mongoose.connect('mongodb+srv://roshan:user12@cluster0.uoxgo.mongodb.net/mobilefirst?retryWrites=true&w=majority', {
     useUnifiedTopology: true,
     useNewUrlParser: true
   })
@@ -33,6 +33,7 @@ mongoose.connect('mongodb://localhost:27017/mobilefirst', {
 
 
 app.use('/', user);
+app.use('/images', express.static('images'));
 
 
 
